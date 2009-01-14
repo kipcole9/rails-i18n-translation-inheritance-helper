@@ -8,7 +8,7 @@ As a plugin:
 	script/plugin install git://github.com/kipcole9/rails-i18n-translation-inheritance-helper.git
 	
 Or from git directly as a plugin to your project:
-	git add submodule git://github.com/kipcole9/rails-i18n-translation-inheritance-helper.git
+	git submodule add git://github.com/kipcole9/rails-i18n-translation-inheritance-helper.git vendor/plugins/i18n_translation_helper
 	
 	
 Description
