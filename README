@@ -14,13 +14,47 @@ Or from git directly as a plugin to your project:
 Description
 ===========
 
-Adds minimal inheritance to translation lookup in Rails i18n.
+Adds a fallback chain to translation lookup in Rails i18n.
 When installed (plugin, or otherwise mixed in) the method 'translate'
 will now attempt to find a translation in a broader scope locale
-if there is one.
+or 'sister' locals if there are any.
 
 This means that it is more practical to have regional variations of
 locales where there are only minor differences.
+
+This updated version defines a lookup_chain as follows:
+
+1. lookup in supplied or default locale (ie. "en-UK")
+2. then in the broader locale ("en")
+3. then any 'sister' locales ('en-GB', 'en-US', 'en-AU', ...). 
+
+NOTE
+===
+To lookup the 'sister' locales requires that the version of I18n 
+installed supports the #available_locales call.
+
+This call is supported in the I18n gem version: svenfuchs-i18n (0.1.2) or in sven's
+github repository.  You can also add the required functions by adding the following
+to an initializer in your rails project:
+
+module I18n
+  class << self
+    def available_locales
+      backend.available_locales
+    end
+  end
+
+  module Backend
+    class Simple
+      def available_locales
+        translations.keys
+      end
+    end
+  end
+end
+
+How this fits in an application
+===============================
 
 For example, the only practical difference between en-US and en-UK
 would be the currency symbol ($ or £).
@@ -28,7 +62,7 @@ would be the currency symbol ($ or £).
 By default, the full set of rails 'en' rails localisation files would need to be
 copied and maintained.
 
-With this approach, a 'en-UK' localisation file for rails just has to maintain
+With this approach, an 'en-UK' localisation file for rails just has to maintain
 the differences from the 'en' version.
 
 An example would be:
@@ -44,7 +78,7 @@ Any lookup in the 'en-UK' local that fails will be redirected to the 'en' locale
 for translation.
 
 This approach can also be used for regional language variations in other
-languages as well (pt-PT vs. pt-BR; fr-FR vs. fr-CA) - for both application
+languages as well (pt-PT vs. pt-BR; fr-FR vs. fr-CA; es-ES vs. es-MX) - for both application
 localisation files and for rails' own localisations.
 
 This would be better (and would execute faster) if implemented in the I18n
@@ -59,6 +93,16 @@ Using the en-UK localisation file above:
 	I18n.translate('support.number.currency.unit')	=> "£"	# Resolved from 'en-UK'
 	I18n.translate('support.array.words_connector')	=> ", " # Resolved from default 'en'
 
+Also added is a new function #locate which can be used as a debugging tool
+to tell you in which locale a translation was found.
+
+	I18n.locate('support.array.words_connector')	=> "en: ', '"
+	
+
+Contact
+=======
+kip cole 9 at g mail dot com
+(remote the spaces etc etc)
 
 
 

@@ -6,26 +6,55 @@ module I18nTranslationHelper
   def self.included(base) 
     base.module_eval do
       class << self
-        # Translate the string in the current locale.  If it doesn't exist
-        # then try on the broader locale (ie. if we tried from en-US, then 
-        # try 'en').  If still no go then use the default text.
-        def translate_with_inheritance(text, options = {})
-          translation = translate_without_inheritance(text, options_without_default(options).merge(:raise => true))
+        def translate_with_fallback(text, options = {})
+          default = options.delete(:default)
+          locale_lookup_chain(options[:locale] || locale).each do |lookup_locale|
+            translation_found, translation = attempt_translation(text, options.merge(:locale => lookup_locale))
+            return translation if translation_found
+          end
+          # Ensure 'translation missing' return is exactly the default behaviour
+          translate_without_fallback(text, options.merge(:default => default))
+        end
+        
+        def attempt_translation(text, options = {})
+          puts "Attempting translation of '#{text}' with locale '#{options[:locale]}'." if options[:debug]
+          translation = translate_without_fallback(text, options.merge(:raise => true))
+          translation_found = options[:locale]
         rescue I18n::MissingTranslationData
-          locale = options[:locale] || I18n.locale
-          translation = translate_without_inheritance(text, options.merge(:locale => broader_locale(locale))) if broader_locale(locale)
+          translation_found = nil
+          translation = "translation missing: #{options[:locale]}, #{text}"
+        ensure
+          return translation_found, translation
         end
 
-        def broader_locale(locale)
-          broader ||= locale.to_s.split('-')[0]
+        def root_locale(locale)
+          locale.to_s.split('-')[0]
         end
         
-        def options_without_default(options)
-          options.reject{|k, v| k == :default}
+        def locate(text, options = {})
+          locale_lookup_chain(options[:locale] || locale).each do |lookup_locale|
+            translation_found, translation = attempt_translation(text, options.merge(:locale => lookup_locale))
+            return "#{lookup_locale}: '#{translation}'" if translation_found
+          end
+          return nil
         end
         
-        alias_method_chain :translate, :inheritance
-        alias_method :t, :translate_with_inheritance
+        def locale_lookup_chain(locale)
+          @i18n_fallback_locales ||= {}
+          unless @i18n_fallback_locales[locale.to_sym]
+            base_locale = (root_locale(locale) || locale).to_sym
+            locales = [locale.to_sym, base_locale]
+            available_locales.each do |l|
+              current_base_locale = root_locale(l)
+              locales << l if current_base_locale && current_base_locale.to_sym == base_locale
+            end if respond_to?(:available_locales)
+            @i18n_fallback_locales[locale.to_sym] = locales.uniq
+          end
+          @i18n_fallback_locales[locale.to_sym]
+        end
+          
+        alias_method_chain :translate, :fallback
+        alias_method :t, :translate_with_fallback
       end
     end 
   end
