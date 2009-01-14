@@ -1,0 +1,52 @@
+I18N Translation Helper
+=======================
+
+Adds minimal inheritance to translation lookup in Rails i18n.
+When installed (plugin, or otherwise mixed in) the method 'translate'
+will now attempt to find a translation in a broader scope locale
+if there is one.
+
+This means that it is more practical to have regional variations of
+locales where there are only minor differences.
+
+For example, the only practical difference between en-US and en-UK
+would be the currency symbol ($ or £).
+
+My default, the full set of rails 'en' rails localisation files would need to be
+copied and maintained.
+
+With this approach, a 'en-UK' localisation file for rails just has to maintain
+the differences from the 'en' version.
+
+An example would be:
+
+en-UK:
+  support:
+    number:
+      # Used in number_to_currency()
+      currency:
+          unit: "£"
+
+Any lookup in the 'en-UK' local that fails will be redirected to the 'en' locale
+for translation.
+
+This approach can also be used for regional language variations in other
+languages as well (pt-PT vs. pt-BR; fr-FR vs. fr-CA) - for both application
+localisation files and for rails' own localisations.
+
+This would be better (and would execute faster) if implemented in the I18n
+core module directly.
+
+Example
+=======
+
+Using the en-UK localisation file above:
+
+	I18n.locale = "en-UK"
+	I18n.translate('support.number.currency.unit')	=> "£"	# Resolved from 'en-UK'
+	I18n.translate('support.array.words_connector')	=> ", " # Resolved from default 'en'
+
+
+
+
+Copyright (c) 2009 Kip Cole, released under the MIT license
