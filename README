@@ -53,6 +53,15 @@ module I18n
   end
 end
 
+Performance
+===========
+
+Note that for the simple cases of a skinny narrow scope locale (ie 'en-GB') where
+most keys are stored in the broader locale (ie. 'en') then performance will be twice
+as slow on average compared with the standard I18n#translate function.
+
+More experimentation to come yet.....
+
 How this fits in an application
 ===============================
 
