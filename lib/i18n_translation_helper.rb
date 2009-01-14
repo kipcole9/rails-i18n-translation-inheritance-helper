@@ -1,4 +1,4 @@
-module I18nHelper
+module I18nTranslationHelper
   # To use do:
   #   require 'i18n_helper'
   #   I18n.send :include, I18nHelper
