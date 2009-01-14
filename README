@@ -25,7 +25,7 @@ locales where there are only minor differences.
 For example, the only practical difference between en-US and en-UK
 would be the currency symbol ($ or £).
 
-My default, the full set of rails 'en' rails localisation files would need to be
+By default, the full set of rails 'en' rails localisation files would need to be
 copied and maintained.
 
 With this approach, a 'en-UK' localisation file for rails just has to maintain

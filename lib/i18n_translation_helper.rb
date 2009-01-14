@@ -17,7 +17,7 @@ module I18nTranslationHelper
         end
 
         def broader_locale(locale)
-          broader ||= locale.split('-')[0]
+          broader ||= locale.to_s.split('-')[0]
         end
         
         def options_without_default(options)
